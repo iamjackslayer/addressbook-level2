@@ -84,9 +84,14 @@ public class Main {
         do {
             String userCommandText = ui.getUserCommand();
             command = new Parser().parseCommand(userCommandText);
-            CommandResult result = executeCommand(command);
-            recordResult(result);
-            ui.showResultToUser(result);
+
+            try {
+                CommandResult result = executeCommand(command);
+                recordResult(result);
+                ui.showResultToUser(result);
+            } catch (StorageOperationException soe) {
+                ui.showToUser(soe.getMessage());
+            }
 
         } while (!ExitCommand.isExit(command));
     }
@@ -105,16 +110,12 @@ public class Main {
      * @param command user command
      * @return result of the command
      */
-    private CommandResult executeCommand(Command command)  {
-        try {
-            command.setData(addressBook, lastShownList);
-            CommandResult result = command.execute();
-            storage.save(addressBook);
-            return result;
-        } catch (Exception e) {
-            ui.showToUser(e.getMessage());
-            throw new RuntimeException(e);
-        }
+    private CommandResult executeCommand(Command command) throws StorageOperationException  {
+        command.setData(addressBook, lastShownList);
+        CommandResult result = command.execute();
+        storage.save(addressBook);
+        return result;
+
     }
 
     /**
